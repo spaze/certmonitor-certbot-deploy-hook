@@ -1,0 +1,34 @@
+#!/bin/bash
+
+CONFIG=$(dirname "$0")/certbot_deploy_hook.conf
+if [ ! -f "$CONFIG" ]; then
+	echo "Config file $CONFIG not found"
+	exit 1
+fi
+
+source certbot_deploy_hook.conf
+
+if [ -z "$DEPLOY_HOOK_USER" ]; then
+	echo "DEPLOY_HOOK_USER not defined in $CONFIG"
+	exit 2
+fi
+
+if [ -z "$DEPLOY_HOOK_KEY" ]; then
+	echo "DEPLOY_HOOK_KEY not defined in $CONFIG"
+	exit 2
+fi
+
+if [ -z "$DEPLOY_HOOK_URL" ]; then
+	echo "DEPLOY_HOOK_URL not defined in $CONFIG"
+	exit 2
+fi
+
+curl \
+--location \
+--silent \
+--user-agent "CertbotDeployHook/1.33.7" \
+--write-out "\n%{url_effective} -> HTTP %{http_code} (in %{time_total}s)\n" \
+--form user="$DEPLOY_HOOK_USER" \
+--form key="$DEPLOY_HOOK_KEY" \
+--form certificate="$(cat "${RENEWED_LINEAGE}/cert.pem")" \
+"$DEPLOY_HOOK_URL"
