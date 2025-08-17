@@ -6,6 +6,7 @@ if [ ! -f "$CONFIG" ]; then
 	exit 1
 fi
 
+# shellcheck source=certbot_deploy_hook.template.conf
 source certbot_deploy_hook.conf
 
 if [ -z "$DEPLOY_HOOK_USER" ]; then
