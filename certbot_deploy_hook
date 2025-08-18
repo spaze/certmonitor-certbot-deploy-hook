@@ -7,7 +7,7 @@ if [ ! -f "$CONFIG" ]; then
 fi
 
 # shellcheck source=certbot_deploy_hook.template.conf
-source certbot_deploy_hook.conf
+source "$CONFIG"
 
 if [ -z "$DEPLOY_HOOK_USER" ]; then
 	echo "DEPLOY_HOOK_USER not defined in $CONFIG"
