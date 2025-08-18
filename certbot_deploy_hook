@@ -24,6 +24,8 @@ if [ -z "$DEPLOY_HOOK_URL" ]; then
 	exit 2
 fi
 
+CERT=$(sudo cat "${RENEWED_LINEAGE}/cert.pem")
+
 curl \
 --location \
 --silent \
@@ -31,5 +33,5 @@ curl \
 --write-out "\n%{url_effective} -> HTTP %{http_code} (in %{time_total}s)\n" \
 --form user="$DEPLOY_HOOK_USER" \
 --form key="$DEPLOY_HOOK_KEY" \
---form certificate="$(cat "${RENEWED_LINEAGE}/cert.pem")" \
+--form certificate="$CERT" \
 "$DEPLOY_HOOK_URL"
