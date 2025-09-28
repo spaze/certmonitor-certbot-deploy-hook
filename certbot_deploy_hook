@@ -25,12 +25,7 @@ if [ -z "$DEPLOY_HOOK_URL" ]; then
 fi
 
 CERT_FILENAME="${RENEWED_LINEAGE}/cert.pem"
-if [ ! -f "$CERT_FILENAME" ]; then
-	echo "File does not exist $CERT_FILENAME"
-	exit 3
-fi
-
-CERT=$(sudo cat "$CERT_FILENAME")
+CERT=$(sudo cat "$CERT_FILENAME" 2> /dev/null) || { echo "File does not exist $CERT_FILENAME"; exit 3; }
 CERT_NAME=$(basename "${RENEWED_LINEAGE}")
 
 curl \
