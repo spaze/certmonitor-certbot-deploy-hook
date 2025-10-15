@@ -1,6 +1,6 @@
 #!/bin/bash
 
-CONFIG=$(dirname "$0")/certbot_deploy_hook.conf
+CONFIG=$(dirname "$(realpath "$0")")/certbot_deploy_hook.conf
 if [ ! -f "$CONFIG" ]; then
 	echo "Config file $CONFIG not found"
 	exit 1
