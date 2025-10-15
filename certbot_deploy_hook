@@ -38,3 +38,6 @@ curl \
 --form name="$CERT_NAME" \
 --form certificate="$CERT" \
 "$DEPLOY_HOOK_URL"
+
+sudo service nginx reload
+echo "nginx configuration reloaded"
