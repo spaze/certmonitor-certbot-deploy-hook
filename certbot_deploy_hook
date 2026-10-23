@@ -29,7 +29,6 @@ CERT=$(sudo cat "$CERT_FILENAME" 2> /dev/null) || { echo "File does not exist $C
 CERT_NAME=$(basename "${RENEWED_LINEAGE}")
 
 curl \
---location \
 --silent \
 --user-agent "CertbotDeployHook/1.33.7" \
 --write-out "\n%{url_effective} -> HTTP %{http_code} (in %{time_total}s)\n" \
