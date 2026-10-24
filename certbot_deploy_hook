@@ -28,8 +28,19 @@ CERT_FILENAME="${RENEWED_LINEAGE}/cert.pem"
 CERT=$(sudo cat "$CERT_FILENAME" 2> /dev/null) || { echo "File does not exist $CERT_FILENAME"; exit 3; }
 CERT_NAME=$(basename "${RENEWED_LINEAGE}")
 
+# The API answers with an HTTP error status when it did not store the certificate, --fail-with-body turns that into
+# a curl error while still printing the JSON that says why. Retried because a request sent right after an nginx reload
+# is sometimes reset, and --retry-all-errors is needed for that, curl's default retry list does not include a reset.
+# It retries a refusal the API will not change its mind about as well, a few seconds spent in a case that needs
+# a human anyway, and nothing is stored twice because an error status means nothing was stored
 curl \
 --silent \
+--show-error \
+--fail-with-body \
+--max-time 30 \
+--retry 3 \
+--retry-delay 2 \
+--retry-all-errors \
 --user-agent "CertbotDeployHook/1.33.7" \
 --write-out "\n%{url_effective} -> HTTP %{http_code} (in %{time_total}s)\n" \
 --data-urlencode user="$DEPLOY_HOOK_USER" \
@@ -37,6 +48,23 @@ curl \
 --data-urlencode name="$CERT_NAME" \
 --data-urlencode certificate="$CERT" \
 "$DEPLOY_HOOK_URL"
+REPORTED=$?
 
 sudo service nginx reload
-echo "nginx configuration reloaded"
+RELOADED=$?
+if [ "$RELOADED" -eq 0 ]; then
+	echo "nginx configuration reloaded"
+else
+	echo "nginx configuration reload failed"
+fi
+
+if [ "$REPORTED" -ne 0 ]; then
+	echo "Certificate $CERT_NAME was not reported, see above"
+fi
+# A failed reload outranks a failed report, the old certificate stays in service
+if [ "$RELOADED" -ne 0 ]; then
+	exit 5
+fi
+if [ "$REPORTED" -ne 0 ]; then
+	exit 4
+fi
